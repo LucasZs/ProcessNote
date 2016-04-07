@@ -7,14 +7,162 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Diagnostics;
 
 namespace ProcessNote
 {
-	public partial class ProcessNote : Form
-	{
-		public ProcessNote()
-		{
-			InitializeComponent();
-		}
-	}
+    public partial class ProcessNote : Form
+    {
+        Process[] proc;
+        public ProcessNote()
+        {
+            InitializeComponent();
+        }
+
+        private void GetProcesses()
+        {
+            proc = Process.GetProcesses();
+        }
+
+
+
+        private void GetProcessDetails(int selectedIndex, ListViewItem item)
+        {
+            try
+            {
+
+                PerformanceCounter cpuCounter;
+                PerformanceCounter total_cpu = new PerformanceCounter("Processor", "% Processor Time", "_Total");
+                cpuCounter = new PerformanceCounter("Process", "% Processor Time", proc[selectedIndex].ProcessName);
+                dynamic firstValue = cpuCounter.NextValue();
+                System.Threading.Thread.Sleep(1000);
+                float secondValue = cpuCounter.NextValue();
+
+
+                item.SubItems[2].Text = secondValue.ToString("n2");
+
+                PerformanceCounter PC = new PerformanceCounter();
+                PC.CategoryName = "Process";
+                PC.CounterName = "Working Set - Private";
+                PC.InstanceName = proc[selectedIndex].ProcessName;
+                double memsize = Convert.ToDouble(PC.NextValue()) / (1024 * 1024);
+                memsize = Math.Round(memsize, 2);
+
+                item.SubItems[3].Text = memsize.ToString() + " MB";
+
+                DateTime startTime = DateTime.Now;
+                string startTimeString = "";
+                try
+                {
+                    startTime = proc[selectedIndex].StartTime;
+                    startTimeString = startTime.ToString();
+                }
+                catch
+                {
+                    startTimeString = "Time not found";
+                }
+
+                item.SubItems[4].Text = startTimeString;
+
+                TimeSpan runningTime = new TimeSpan();
+                if (startTimeString != "Time not found")
+                {
+                    runningTime = DateTime.Now - startTime;
+                    item.SubItems[5].Text = runningTime.ToString(@"hh\:mm\:ss");
+                }
+                else
+                    item.SubItems[5].Text = "Not available";
+
+                threadListBox.Items.Clear();
+                ProcessThreadCollection currentThreads;
+                currentThreads = proc[selectedIndex].Threads;
+                foreach (ProcessThread thread in currentThreads)
+                {
+                    threadListBox.Items.Add(thread.Id.ToString());
+                }
+            }
+            catch
+            {
+                item.SubItems[0].Text = "Process ";
+                item.SubItems[1].Text = "closed!";
+                return;
+            }
+        }
+
+        private void ProcessNote_Load(object sender, EventArgs e)
+        {
+            GetProcesses();
+
+            listViewProcesses.View = View.Details;
+            listViewProcesses.GridLines = true;
+            listViewProcesses.FullRowSelect = true;
+
+            listViewProcesses.Items.Clear();
+            for (int i = 0; i < proc.Length; i++)
+            {
+                listViewProcesses.Items.Add(proc[i].ProcessName).SubItems.AddRange(new string[] { proc[i].Id.ToString(),"","","",""});
+            }
+
+
+
+        }
+
+
+
+        private void listViewProcesses_DoubleClick(object sender, EventArgs e)
+        {
+            ListViewItem item = new ListViewItem();
+            item = this.listViewProcesses.SelectedItems[0];
+            var indexes = listViewProcesses.SelectedIndices;
+            int selectedIndex = 0;
+            foreach (int number in indexes)
+            {
+                selectedIndex = number;
+            }
+            GetProcessDetails(selectedIndex, item);
+        }
+
+
+
+
+
+        private void listViewProcesses_MouseClick(object sender, MouseEventArgs e)
+        {
+            ListViewItem item = new ListViewItem();
+            item = this.listViewProcesses.SelectedItems[0];
+            if (item.SubItems[2].Text != "")
+                return;
+            var indexes = listViewProcesses.SelectedIndices;
+            int selectedIndex = 0;
+            foreach (int number in indexes)
+            {
+                selectedIndex = number;
+            }
+            GetProcessDetails(selectedIndex, item);
+            
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            GetProcesses();
+
+            listViewProcesses.View = View.Details;
+            listViewProcesses.GridLines = true;
+            listViewProcesses.FullRowSelect = true;
+
+            listViewProcesses.Items.Clear();
+            for (int i = 0; i < proc.Length; i++)
+            {
+                listViewProcesses.Items.Add(proc[i].ProcessName).SubItems.AddRange(new string[] { proc[i].Id.ToString(), "", "", "", "" });
+            }
+        }
+
+        private void alwaysOnTopCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            if (alwaysOnTopCheckBox.Checked)
+                this.TopMost = true;
+            else
+                this.TopMost = false;
+        }
+    }
 }
