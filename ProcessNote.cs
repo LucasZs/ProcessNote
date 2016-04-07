@@ -14,6 +14,9 @@ namespace ProcessNote
     public partial class ProcessNote : Form
     {
         Process[] proc;
+        List<CommentedTask> commentedTaskList = new List<CommentedTask>();
+        int selectedIndex;
+
         public ProcessNote()
         {
             InitializeComponent();
@@ -26,7 +29,7 @@ namespace ProcessNote
 
 
 
-        private void GetProcessDetails(int selectedIndex, ListViewItem item)
+        private void GetProcessDetails(ListViewItem item)
         {
             try
             {
@@ -80,6 +83,8 @@ namespace ProcessNote
                 {
                     threadListBox.Items.Add(thread.Id.ToString());
                 }
+
+
             }
             catch
             {
@@ -93,6 +98,8 @@ namespace ProcessNote
         {
             GetProcesses();
 
+
+
             listViewProcesses.View = View.Details;
             listViewProcesses.GridLines = true;
             listViewProcesses.FullRowSelect = true;
@@ -100,10 +107,8 @@ namespace ProcessNote
             listViewProcesses.Items.Clear();
             for (int i = 0; i < proc.Length; i++)
             {
-                listViewProcesses.Items.Add(proc[i].ProcessName).SubItems.AddRange(new string[] { proc[i].Id.ToString(),"","","",""});
+                listViewProcesses.Items.Add(proc[i].ProcessName).SubItems.AddRange(new string[] { proc[i].Id.ToString(), "", "", "", "" });
             }
-
-
 
         }
 
@@ -111,35 +116,50 @@ namespace ProcessNote
 
         private void listViewProcesses_DoubleClick(object sender, EventArgs e)
         {
+            richTextBoxComment.Clear();
             ListViewItem item = new ListViewItem();
             item = this.listViewProcesses.SelectedItems[0];
             var indexes = listViewProcesses.SelectedIndices;
-            int selectedIndex = 0;
+            selectedIndex = 0;
             foreach (int number in indexes)
             {
                 selectedIndex = number;
             }
-            GetProcessDetails(selectedIndex, item);
+            int processId = proc[selectedIndex].Id;
+            foreach (CommentedTask process in commentedTaskList)
+            {
+                if (process.getId() == processId)
+                {
+                    richTextBoxComment.Text = process.getComment();
+                }
+            }
+            GetProcessDetails(item);
         }
-
-
-
-
 
         private void listViewProcesses_MouseClick(object sender, MouseEventArgs e)
         {
+            richTextBoxComment.Clear();
             ListViewItem item = new ListViewItem();
             item = this.listViewProcesses.SelectedItems[0];
-            if (item.SubItems[2].Text != "")
-                return;
+
             var indexes = listViewProcesses.SelectedIndices;
-            int selectedIndex = 0;
+            selectedIndex = 0;
             foreach (int number in indexes)
             {
                 selectedIndex = number;
             }
-            GetProcessDetails(selectedIndex, item);
-            
+            int processId = proc[selectedIndex].Id;
+            foreach (CommentedTask process in commentedTaskList)
+            {
+                if (process.getId() == processId)
+                {
+                    richTextBoxComment.Text = process.getComment();
+                }
+            }
+            if (item.SubItems[2].Text != "")
+                return;
+            GetProcessDetails(item);
+
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -163,6 +183,31 @@ namespace ProcessNote
                 this.TopMost = true;
             else
                 this.TopMost = false;
+        }
+
+
+
+        private void richTextBoxComment_Leave(object sender, EventArgs e)
+        {
+            int processId = proc[selectedIndex].Id;
+            bool found = false;
+
+            foreach (CommentedTask process in commentedTaskList)
+            {
+                if (process.getId() == processId)
+                {
+                    found = true;
+                    process.setComment(richTextBoxComment.Text);
+                }
+
+            }
+            if (!found)
+            {
+                CommentedTask newCommentedProcess = new CommentedTask(processId);
+                newCommentedProcess.setComment(richTextBoxComment.Text);
+                commentedTaskList.Add(newCommentedProcess);
+
+            }
         }
     }
 }

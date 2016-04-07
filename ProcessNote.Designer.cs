@@ -124,6 +124,8 @@
             this.richTextBoxComment.Size = new System.Drawing.Size(300, 108);
             this.richTextBoxComment.TabIndex = 10;
             this.richTextBoxComment.Text = "";
+
+            this.richTextBoxComment.Leave += new System.EventHandler(this.richTextBoxComment_Leave);
             // 
             // label1
             // 
