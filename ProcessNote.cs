@@ -209,5 +209,17 @@ namespace ProcessNote
 
             }
         }
+
+
+        private void ProcessNote_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (MessageBox.Show("Your comments won't be saved! Sure about quit?", "My Application",
+        MessageBoxButtons.YesNo) == DialogResult.No)
+            {
+                // Cancel the Closing event from closing the form.
+                e.Cancel = true;
+                // Call method to save file...
+            }
+        }
     }
 }

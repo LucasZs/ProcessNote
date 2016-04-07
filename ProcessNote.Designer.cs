@@ -124,7 +124,6 @@
             this.richTextBoxComment.Size = new System.Drawing.Size(300, 108);
             this.richTextBoxComment.TabIndex = 10;
             this.richTextBoxComment.Text = "";
-
             this.richTextBoxComment.Leave += new System.EventHandler(this.richTextBoxComment_Leave);
             // 
             // label1
@@ -171,6 +170,7 @@
             this.Controls.Add(this.threadListBox);
             this.Name = "ProcessNote";
             this.Text = "ProcessNote";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ProcessNote_FormClosing);
             this.Load += new System.EventHandler(this.ProcessNote_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
